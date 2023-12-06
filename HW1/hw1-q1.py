@@ -90,20 +90,17 @@ class MLP(object):
         self.W2 = np.random.normal(loc=0.1, scale=0.1, size=(hidden_size, n_classes))
         self.b2 = np.zeros(n_classes)
 
-
     def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        print("predict")
-        z = np.zeros(X.shape[0])
-        for ind, x in enumerate(X):
-            z1 = X.dot(self.W1) + self.b1
-            h1 = np.maximum(0, z1)
-            z2 = h1.dot(self.W2) + self.b2 #n_samp(90k) x n_class(4)
-            p = self.softmax(z2)
-            z[ind] = np.argmax(p)
-        return z
+        
+        z1 = X.dot(self.W1) + self.b1
+        h1 = np.maximum(0, z1)
+        z2 = h1.dot(self.W2) + self.b2 #n_samp(90k) x n_class(4)
+        p = self.softmax(z2)
+
+        return np.argmax(p, axis=1)
 
         # y_hat = np.zeros(X.shape[0])
         # for i, x in enumerate(X):
@@ -125,36 +122,35 @@ class MLP(object):
         return n_correct / n_possible
 
     def train_epoch(self, X, y, learning_rate=0.001):
-        
+        """
+        Dont forget to return the loss of the epoch.
+        """
         z1 = X.dot(self.W1) + self.b1
         h1 = np.maximum(0, z1)
         z2 = h1.dot(self.W2) + self.b2 #n_samp(90k) x n_class(4)
         p = self.softmax(z2)
 
-        y_one_hot = np.eye(max(y)+1)[y] ## Transpose is not good.
-        loss = -np.sum(y_one_hot * np.log(p)) / len(X)
+        y_one_hot = np.eye(np.unique(y).size)[y] ## Transpose is not good.
+        loss = -np.sum(y_one_hot * np.log(p)) / len(X) #why do you devide with len(X)
 
         # Backpropagation 
-
         grad_z2 = p - y_one_hot 
         grad_W2 = h1.T.dot(grad_z2)
-        grad_b2 = np.sum(grad_z2, axis=0)
+        grad_b2 = np.sum(grad_z2, axis=0) # why we sum it --> shape is 4
+        
 
         grad_h1 = grad_z2.dot(self.W2.T)
-        grad_z1 = grad_h1 * (z1 > 0)  # ReLU derivative
+        grad_z1 = grad_h1 * (z1 >= 0)  # ReLU derivative
         grad_W1 = X.T.dot(grad_z1)
-        grad_b1 = np.sum(grad_z1, axis=0)
+        grad_b1 = np.sum(grad_z1, axis=0) # why we sum it --> shape is 200
 
         self.W1 -= learning_rate*grad_W1
         self.b1 -= learning_rate*grad_b1
         self.W2 -= learning_rate*grad_W2
         self.b2 -= learning_rate*grad_b2
-
-
+        
         return loss
-        """
-        Dont forget to return the loss of the epoch.
-        """
+       
 
     def softmax(self, Z):
         Z = np.atleast_2d(Z)  # ensure Z is at least 2D
@@ -233,7 +229,6 @@ def main():
                 train_y,
                 learning_rate=opt.learning_rate
             )
-        
         train_accs.append(model.evaluate(train_X, train_y))
         valid_accs.append(model.evaluate(dev_X, dev_y))
         if opt.model == 'mlp':

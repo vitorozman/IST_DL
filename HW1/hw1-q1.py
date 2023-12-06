@@ -137,18 +137,13 @@ class MLP(object):
         # Backpropagation 
 
         grad_z2 = p - y_one_hot 
-        grad_W2 = grad_z2[:, None].dot(h1[:, None].T)
-        grad_b2 = grad_z2
-        
-        # Gradient of hidden layer below.
-        grad_h2 = self.W2.T.dot(grad_z2)
+        grad_W2 = h1.T.dot(grad_z2)
+        grad_b2 = np.sum(grad_z2, axis=0)
 
-        # Gradient of hidden layer below before activation.
-        grad_z2 = grad_h2 * (1-h1**2)   # Grad of loss wrt z3.
-
-        # Gradient of hidden parameters.
-        grad_W1 = grad_z2[:, None].dot(X[:, None].T)
-        grad_b1 = grad_z2
+        grad_h1 = grad_z2.dot(self.W2.T)
+        grad_z1 = grad_h1 * (z1 > 0)  # ReLU derivative
+        grad_W1 = X.T.dot(grad_z1)
+        grad_b1 = np.sum(grad_z1, axis=0)
 
         self.W1 -= learning_rate*grad_W1
         self.b1 -= learning_rate*grad_b1

@@ -96,6 +96,15 @@ class MLP(object):
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
         print("predict")
+        z = np.zeros(X.shape[0])
+        for ind, x in enumerate(X):
+            z1 = X.dot(self.W1) + self.b1
+            h1 = np.maximum(0, z1)
+            z2 = h1.dot(self.W2) + self.b2 #n_samp(90k) x n_class(4)
+            p = self.softmax(z2)
+            z[ind] = np.argmax(p)
+        return z
+
         # y_hat = np.zeros(X.shape[0])
         # for i, x in enumerate(X):
         #     out1 = np.maximum(0, self.W1.dot(x) + self.b1)
@@ -121,16 +130,33 @@ class MLP(object):
         h1 = np.maximum(0, z1)
         z2 = h1.dot(self.W2) + self.b2 #n_samp(90k) x n_class(4)
         p = self.softmax(z2)
-        print(y.shape)
-        y_one_hot = np.transpose(np.eye(max(y)+1)[y])
-        print(p.shape)
-        Loss = -np.log(p).dot(y_one_hot)
-        print(Loss.shape)
+
+        y_one_hot = np.eye(max(y)+1)[y] ## Transpose is not good.
+        loss = -np.sum(y_one_hot * np.log(p)) / len(X)
+
+        # Backpropagation 
+
+        grad_z2 = p - y_one_hot 
+        grad_W2 = grad_z2[:, None].dot(h1[:, None].T)
+        grad_b2 = grad_z2
         
+        # Gradient of hidden layer below.
+        grad_h2 = self.W2.T.dot(grad_z2)
 
-        raise NotImplementedError
+        # Gradient of hidden layer below before activation.
+        grad_z2 = grad_h2 * (1-h1**2)   # Grad of loss wrt z3.
+
+        # Gradient of hidden parameters.
+        grad_W1 = grad_z2[:, None].dot(X[:, None].T)
+        grad_b1 = grad_z2
+
+        self.W1 -= learning_rate*grad_W1
+        self.b1 -= learning_rate*grad_b1
+        self.W2 -= learning_rate*grad_W2
+        self.b2 -= learning_rate*grad_b2
 
 
+        return loss
         """
         Dont forget to return the loss of the epoch.
         """

@@ -87,7 +87,7 @@ class MLP(object):
         # Initialize an MLP with a single hidden layer.
         self.W1 = np.random.normal(loc=0.1, scale=0.1, size=(n_features, hidden_size))
         self.b1 = np.zeros(hidden_size)
-        self.W2 = np.random.normal(loc=0.1, scale=0.1, size=(n_classes, hidden_size))
+        self.W2 = np.random.normal(loc=0.1, scale=0.1, size=(hidden_size, n_classes))
         self.b2 = np.zeros(n_classes)
 
 
@@ -96,13 +96,13 @@ class MLP(object):
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
         print("predict")
-        y_hat = np.zeros(X.shape[0])
-        for i, x in enumerate(X):
-            out1 = np.maximum(0, self.W1.dot(x) + self.b1)
-            out2 = self.W2.dot(out1) + self.b2
-            y_hat[i] = np.exp(out2)/np.sum(np.exp(out2))
+        # y_hat = np.zeros(X.shape[0])
+        # for i, x in enumerate(X):
+        #     out1 = np.maximum(0, self.W1.dot(x) + self.b1)
+        #     out2 = self.W2.dot(out1) + self.b2
+        #     y_hat[i] = np.exp(out2)/np.sum(np.exp(out2))
 
-        return y_hat
+        # return y_hat
 
     def evaluate(self, X, y):
         """
@@ -116,26 +116,29 @@ class MLP(object):
         return n_correct / n_possible
 
     def train_epoch(self, X, y, learning_rate=0.001):
-        print(X.shape)
-        print(self.W1.shape)
-        y_hat = np.zeros(X.shape[0])
-        for x_i, y_i in zip(X, y):
-            z1 = self.W1.dot(x_i) + self.b1
-            h1 = np.maximum(0, z1)
-            z2 = self.W2.dot(h1) + self.b2
-            p = np.exp(z2)/np.sum(np.exp(z2))
-            loss = -y_i.dot(np.log(p))
+        
+        z1 = X.dot(self.W1) + self.b1
+        h1 = np.maximum(0, z1)
+        z2 = h1.dot(self.W2) + self.b2 #n_samp(90k) x n_class(4)
+        p = self.softmax(z2)
+        print(y.shape)
+        y_one_hot = np.transpose(np.eye(max(y)+1)[y])
+        print(p.shape)
+        Loss = -np.log(p).dot(y_one_hot)
+        print(Loss.shape)
+        
 
-            pass
-
-
+        raise NotImplementedError
 
 
         """
         Dont forget to return the loss of the epoch.
         """
 
-    
+    def softmax(self, Z):
+        Z = np.atleast_2d(Z)  # ensure Z is at least 2D
+        expZ = np.exp(Z - np.max(Z, axis=1, keepdims=True))
+        return expZ / expZ.sum(axis=1, keepdims=True)
 
 
 def plot(epochs, train_accs, val_accs):

@@ -85,13 +85,24 @@ class MLP(object):
     # in main().
     def __init__(self, n_classes, n_features, hidden_size):
         # Initialize an MLP with a single hidden layer.
-        raise NotImplementedError
+        self.W1 = np.random.normal(loc=0.1, scale=0.1, size=(n_features, hidden_size))
+        self.b1 = np.zeros(hidden_size)
+        self.W2 = np.random.normal(loc=0.1, scale=0.1, size=(n_classes, hidden_size))
+        self.b2 = np.zeros(n_classes)
+
 
     def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        raise NotImplementedError
+        print("predict")
+        y_hat = np.zeros(X.shape[0])
+        for i, x in enumerate(X):
+            out1 = np.maximum(0, self.W1.dot(x) + self.b1)
+            out2 = self.W2.dot(out1) + self.b2
+            y_hat[i] = np.exp(out2)/np.sum(np.exp(out2))
+
+        return y_hat
 
     def evaluate(self, X, y):
         """
@@ -105,10 +116,26 @@ class MLP(object):
         return n_correct / n_possible
 
     def train_epoch(self, X, y, learning_rate=0.001):
+        print(X.shape)
+        print(self.W1.shape)
+        y_hat = np.zeros(X.shape[0])
+        for x_i, y_i in zip(X, y):
+            z1 = self.W1.dot(x_i) + self.b1
+            h1 = np.maximum(0, z1)
+            z2 = self.W2.dot(h1) + self.b2
+            p = np.exp(z2)/np.sum(np.exp(z2))
+            loss = -y_i.dot(np.log(p))
+
+            pass
+
+
+
+
         """
         Dont forget to return the loss of the epoch.
         """
-        raise NotImplementedError
+
+    
 
 
 def plot(epochs, train_accs, val_accs):

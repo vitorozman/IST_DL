@@ -26,7 +26,6 @@ class LogisticRegression(nn.Module):
         pytorch to make weights and biases, have a look at
         https://pytorch.org/docs/stable/nn.html
         """
-        super().__init__()
         # In a pytorch module, the declarations of layers needs to come after
         # the super __init__ line, otherwise the magic doesn't work.
         super(LogisticRegression, self).__init__()
@@ -48,7 +47,6 @@ class LogisticRegression(nn.Module):
         """
         y_pred = torch.sigmoid(self.linear(x))
         return y_pred
-        #raise NotImplementedError
 
 
 # Q2.2
@@ -69,10 +67,25 @@ class FeedforwardNetwork(nn.Module):
         includes modules for several activation functions and dropout as well.
         """
         super(FeedforwardNetwork, self).__init__()
-        self.fc1 = nn.Linear(n_features, hidden_size)
-        self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(dropout)
-        self.fc2 = nn.Linear(hidden_size, n_classes)
+        self.layers = nn.ModuleList()  # ModuleList to hold the layers
+
+        # Input layer
+        self.layers.append(nn.Linear(n_features, hidden_size))
+
+        # Hidden layers
+        for _ in range(layers):
+            if activation_type == "relu":
+                self.layers.append(nn.ReLU())
+            elif activation_type == "tanh":
+                self.layers.append(nn.Tanh())
+            else:
+                raise ValueError("Invalid activation_type")
+
+            self.layers.append(nn.Linear(hidden_size, hidden_size))
+            self.layers.append(nn.Dropout(dropout))
+
+        # Output layer
+        self.layers.append(nn.Linear(hidden_size, n_classes))
 
 
     def forward(self, x, **kwargs):
@@ -83,10 +96,8 @@ class FeedforwardNetwork(nn.Module):
         the output logits from x. This will include using various hidden
         layers, pointwise nonlinear functions, and dropout.
         """
-        x = self.fc1(x)
-        x = self.relu(x)
-        x = self.dropout(x)
-        x = self.fc2(x)
+        for layer in self.layers:
+            x = layer(x)
         return x
 
 

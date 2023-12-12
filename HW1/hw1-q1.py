@@ -95,14 +95,16 @@ class MLP(object):
         # Compute the forward pass of the network. At prediction time, there is
         # no need to save the values of hidden nodes, whereas this is required
         # at training time.
-        z1 = X.dot(self.W1) + self.b1
-        h1 = np.maximum(0, z1)
-        z2 = h1.dot(self.W2) + self.b2 
-        p = self.softmax(z2)# softmax
-        z = np.argmax(p, axis=1)
-        print(z.shape)
-        print(z)
+        z = np.zeros(X.shape[0])
+        for ind, x in enumerate(X):
+            x = x.reshape(-1, 1)
+            z1 = self.W1.dot(x) + self.b1 
+            h1 = np.maximum(0, z1)
+            z2 = self.W2.dot(h1) + self.b2 
+            p = self.softmax(z2) # softmax
+            z[ind] = np.argmax(p)
         return z
+
 
     def evaluate(self, X, y):
         """
@@ -121,10 +123,9 @@ class MLP(object):
         """
         for x, y_tmp in zip(X, y):
             y_one_hot = np.eye(4)[y_tmp]  # one-hot encoding
-            #x = x.reshape(-1, 1)
-            z1 = self.W1.dot(x.T) + self.b1 
-            print(x.T.shape)
-            print(self.W1.shape)
+            x = x.reshape(-1, 1)
+
+            z1 = self.W1.dot(x) + self.b1 
             h1 = np.maximum(0, z1)
             z2 = self.W2.dot(h1) + self.b2 
             p = self.softmax(z2) # softmax
@@ -132,28 +133,27 @@ class MLP(object):
             loss = -np.sum(y_one_hot.dot(np.log(p))) 
 
             # Backpropagation 
+            y_one_hot = y_one_hot.reshape(-1, 1)
+
             grad_output = p - y_one_hot
-            print(grad_output.shape)
-            print(h1.shape)
-            grad_W2 = grad_output.T.dot(h1)
+
+            grad_W2 = grad_output.dot(h1.T)
             grad_b2 = grad_output
-            grad_h1 = self.W2.dot(grad_output.T)
-            #grad_z1 = grad_h1 * (h1 > 0)  # ReLU derivative
-            grad_z1 = np.multiply(grad_h1, (h1 > 0).T)
-            grad_W1 = grad_z1.dot(x.reshape(-1, 1).T)
+            grad_h1 = self.W2.T.dot(grad_output)
+            grad_z1 = grad_h1 * (h1 > 0)  # ReLU derivative
+            grad_W1 = grad_z1.dot(x.T)
             grad_b1 = grad_z1
 
-            self.W2 -= learning_rate*grad_W2.T
+            self.W2 -= learning_rate*grad_W2
             self.b2 -= learning_rate*grad_b2
-            self.W1 -= learning_rate*grad_W1.T
+            self.W1 -= learning_rate*grad_W1
             self.b1 -= learning_rate*grad_b1
 
         return loss
 
-    def softmax(self, Z):
-        Z = np.atleast_2d(Z)  # ensure Z is at least 2D
-        expZ = np.exp(Z - np.max(Z, axis=1, keepdims=True))
-        return expZ / expZ.sum(axis=1, keepdims=True)
+    def softmax(self, x):
+        exp_x = np.exp(x - np.max(x))  # Subtracting np.max(x) for numerical stability
+        return exp_x / np.sum(exp_x, axis=0)
 
 
 def plot(epochs, train_accs, val_accs):

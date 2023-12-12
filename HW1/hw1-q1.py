@@ -86,10 +86,10 @@ class MLP(object):
 
     def __init__(self, n_classes, n_features, hidden_size):
         # Initialize an MLP with a single hidden layer.
-        self.W1 = np.random.normal(loc=0.1, scale=0.1, size=(n_features, hidden_size,)) # 784 x 200 
-        self.b1 = np.zeros((1, hidden_size))
-        self.W2 = np.random.normal(loc=0.1, scale=0.1, size=(hidden_size, n_classes)) # 200 x 4 
-        self.b2 = np.zeros((1, n_classes))
+        self.W1 = np.random.normal(loc=0.1, scale=0.1, size=(hidden_size,n_features)) #  200 x 784 
+        self.b1 = np.zeros((hidden_size,1))
+        self.W2 = np.random.normal(loc=0.1, scale=0.1, size=(n_classes,hidden_size)) # 4 x 200 
+        self.b2 = np.zeros((n_classes,1))
 
     def predict(self, X):
         # Compute the forward pass of the network. At prediction time, there is
@@ -119,29 +119,34 @@ class MLP(object):
         """
         Dont forget to return the loss of the epoch.
         """
-        y_one_hot = np.eye(4)[y]  # one-hot encoding
-        
-        z1 = X.dot(self.W1) + self.b1 # 64 x 200
-        h1 = np.maximum(0, z1)
-        z2 = h1.dot(self.W2) + self.b2 #  64 x 4
-        p = self.softmax(z2) # softmax
+        for x, y_tmp in zip(X, y):
+            y_one_hot = np.eye(4)[y_tmp]  # one-hot encoding
+            #x = x.reshape(-1, 1)
+            z1 = self.W1.dot(x.T) + self.b1 
+            print(x.T.shape)
+            print(self.W1.shape)
+            h1 = np.maximum(0, z1)
+            z2 = self.W2.dot(h1) + self.b2 
+            p = self.softmax(z2) # softmax
 
-        loss = -np.sum(y_one_hot.dot(np.log(p.T))) 
+            loss = -np.sum(y_one_hot.dot(np.log(p))) 
 
-        # Backpropagation 
-        grad_output = p - y_one_hot
-        grad_W2 = h1.T.dot(grad_output)
-        grad_b2 = np.sum(grad_output, axis=0)
+            # Backpropagation 
+            grad_output = p - y_one_hot
+            print(grad_output.shape)
+            print(h1.shape)
+            grad_W2 = grad_output.T.dot(h1)
+            grad_b2 = grad_output
+            grad_h1 = self.W2.dot(grad_output.T)
+            #grad_z1 = grad_h1 * (h1 > 0)  # ReLU derivative
+            grad_z1 = np.multiply(grad_h1, (h1 > 0).T)
+            grad_W1 = grad_z1.dot(x.reshape(-1, 1).T)
+            grad_b1 = grad_z1
 
-        grad_h1 = grad_output.dot(self.W2.T)
-        grad_z1 = grad_h1 * (h1 > 0)  # ReLU derivative
-        grad_W1 = X.T.dot(grad_z1)
-        grad_b1 = np.sum(grad_z1, axis=0)
-
-        self.W2 -= learning_rate*grad_W2
-        self.b2 -= learning_rate*grad_b2
-        self.W1 -= learning_rate*grad_W1
-        self.b1 -= learning_rate*grad_b1
+            self.W2 -= learning_rate*grad_W2.T
+            self.b2 -= learning_rate*grad_b2
+            self.W1 -= learning_rate*grad_W1.T
+            self.b1 -= learning_rate*grad_b1
 
         return loss
 

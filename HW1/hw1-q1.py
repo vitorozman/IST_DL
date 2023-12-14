@@ -47,13 +47,12 @@ class Perceptron(LinearModel):
         """
         scores = np.dot(self.W, x_i)
         predicted_label = np.argmax(scores)
-        #ind = [i for i in range(self.W.shape[0]) if i != y_i]
+
         if predicted_label != y_i:
             # Perceptron update.
             self.W[y_i,:] += x_i
             self.W[predicted_label,:] -= x_i
-        # Q1.1a
-        #raise NotImplementedError
+
 
 
 class LogisticRegression(LinearModel):
@@ -70,13 +69,11 @@ class LogisticRegression(LinearModel):
         y_one_hot[y_i] = 1
 
         # Softmax function
-        # This gives the label probabilities according to the model (num_labels x 1).
         label_probabilities = np.exp(label_scores) / np.sum(np.exp(label_scores))
         
         # SGD update. W is num_labels x num_features.
         self.W += learning_rate * (y_one_hot - label_probabilities).dot(np.expand_dims(x_i, axis = 1).T)
-        # Q1.1b
-        #raise NotImplementedError
+        
 
 
 class MLP(object):
@@ -101,7 +98,7 @@ class MLP(object):
             z1 = self.W1.dot(x) + self.b1 
             h1 = np.maximum(0, z1)
             z2 = self.W2.dot(h1) + self.b2 
-            p = self.softmax(z2) # softmax
+            p = self.softmax(z2) 
             z[ind] = np.argmax(p)
         return z
 
@@ -122,7 +119,7 @@ class MLP(object):
         Dont forget to return the loss of the epoch.
         """
         for x, y_tmp in zip(X, y):
-            y_one_hot = np.eye(4)[y_tmp]  # one-hot encoding
+            y_one_hot = np.eye(4)[y_tmp] 
             x = x.reshape(-1, 1)
 
             z1 = self.W1.dot(x) + self.b1 
@@ -140,7 +137,7 @@ class MLP(object):
             grad_W2 = grad_output.dot(h1.T)
             grad_b2 = grad_output
             grad_h1 = self.W2.T.dot(grad_output)
-            grad_z1 = grad_h1 * (h1 > 0)  # ReLU derivative
+            grad_z1 = grad_h1 * (z1 > 0)  # ReLU derivative
             grad_W1 = grad_z1.dot(x.T)
             grad_b1 = grad_z1
 
@@ -152,7 +149,8 @@ class MLP(object):
         return loss
 
     def softmax(self, x):
-        exp_x = np.exp(x - np.max(x))  # Subtracting np.max(x) for numerical stability
+        # Subtracting np.max(x) for numerical stability
+        exp_x = np.exp(x - np.max(x)) 
         return exp_x / np.sum(exp_x, axis=0)
 
 

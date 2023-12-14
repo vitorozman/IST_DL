@@ -125,7 +125,6 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     loss.backward()
     optimizer.step()
     return loss.item()
-    #raise NotImplementedError
 
 
 def predict(model, X):

@@ -21,7 +21,7 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
         self.no_maxpool = no_maxpool
         # First convolution layer
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=8, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1)
         
         # ReLU activation
         self.relu1 = nn.ReLU()
@@ -33,9 +33,10 @@ class CNN(nn.Module):
             #raise NotImplementedError
         else:
             # Implementation for Q2.2
-            raise NotImplementedError
+            self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=2, padding=1)
+
         # Second convolution layer
-        self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=0)
+        self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=1)
         
         # ReLU activation
         self.relu2 = nn.ReLU()
@@ -43,9 +44,13 @@ class CNN(nn.Module):
         # Max pooling if not disabled
         if not no_maxpool:
             self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-        
-        # Calculate the number of input features for the first fully connected layer
-        self.num_features_fc1 = 16 * 6 * 6  # Assuming input image size is 32x32
+            # Calculate the number of input features for the first fully connected layer
+            self.num_features_fc1 = 16 * 7 * 7
+        else:
+            self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=2, padding=0)
+            self.num_features_fc1 = 16 * 6 * 6
+
+    
         # First fully connected layer
         self.fc1 = nn.Linear(self.num_features_fc1, 320)
         # ReLU activation
@@ -61,16 +66,16 @@ class CNN(nn.Module):
         self.relu4 = nn.ReLU()
         
         # Last fully connected layer
-        self.fc3 = nn.Linear(120, 10) 
+        self.fc3 = nn.Linear(120, 4) 
 
 
         # Implementation for Q2.1 and Q2.2
-        raise NotImplementedError
+        #raise NotImplementedError
         
     def forward(self, x):
         # input should be of shape [b, c, w, h]
+        x = x.view(x.shape[0], 1, 28, 28)
         # conv and relu layers
-
         x = self.relu1(self.conv1(x))
         # max-pool layer if using it
         if not self.no_maxpool:
@@ -146,7 +151,7 @@ def plot(epochs, plottable, ylabel='', name=''):
 
 def get_number_trainable_params(model):
     ## TO IMPLEMENT - REPLACE return 0
-    return 0
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 def main():

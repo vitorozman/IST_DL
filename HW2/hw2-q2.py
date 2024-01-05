@@ -68,9 +68,6 @@ class CNN(nn.Module):
         # Last fully connected layer
         self.fc3 = nn.Linear(120, 4) 
 
-
-        # Implementation for Q2.1 and Q2.2
-        #raise NotImplementedError
         
     def forward(self, x):
         # input should be of shape [b, c, w, h]

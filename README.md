@@ -1,10 +1,7 @@
-# Deep Learning at Instituto Superior Técnico, Lisbon
+# Projects of Deep Learning course at Instituto Superior Técnico, Lisbon
 
 Welcome to repository documenting deep learning course at Instituto Superior Técnico in Lisbon! 
 
-## Description
-
-This repository contains projects and lecture slides from the Deep Learning course offered at the University of Lisbon, specifically within the Department of Data Science at Instituto Superior Técnico. The focus of this repository is on both theoretical understanding and practical implementation of deep learning concepts. The goal of this course is to provide a robust understanding of modern deep learning techniques.
 
 ## Course topics
 
@@ -22,16 +19,18 @@ This repository contains projects and lecture slides from the Deep Learning cour
 
 ## Folder Structure
 
-- [Homework 1 - ](https://github.com/vitorozman/IST_DL/tree/main/HW1)
-- [Homework 2 - ](https://github.com/vitorozman/IST_DL/tree/main/HW2)
-- [Lectures slides](https://github.com/vitorozman/IST_DL/tree/main/Lectures_slides)
+- [Homework 1 - paper](https://github.com/vitorozman/IST_DL/Homework_1.pdf)
+- [Homework 1 - code](https://github.com/vitorozman/IST_DL/tree/main/HW1)
+- [Homework 2 - paper](https://github.com/vitorozman/IST_DL/Homework_2.pdf)
+- [Homework 2 - code](https://github.com/vitorozman/IST_DL/tree/main/HW2)
 
 
 ## Getting Started
 
-1. **Clone the Repository:**
+**Clone the Repository:**
    ```bash
    git clone [https://github.com/your-username/deep-learning-journey.git](https://github.com/vitorozman/IST_DL)https://github.com/vitorozman/IST_DL
+
 
 ## Contributors
 
